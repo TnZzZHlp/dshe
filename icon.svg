@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <title>agy web search</title>
+  <g fill="none" stroke="#4b5563" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="15.5" cy="15.5" r="9.5"/>
+    <path d="M22.6 22.6 L31 31"/>
+  </g>
+  <path d="M15.5 9.2l1.6 3.8 3.8 1.6-3.8 1.6-1.6 3.8-1.6-3.8-3.8-1.6 3.8-1.6z" fill="#f59e0b"/>
+</svg>

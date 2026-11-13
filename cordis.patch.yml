@@ -1,0 +1,7 @@
+# Registers the provider-neutral agent web-search plugin. It contributes one
+# `web` search provider per enabled provider (agy by default) and one dedicated
+# tool (agent_web_search); it does not change the profile's persistent web
+# configuration, so each provider stays opt-in for the built-in web_search.
+- insert:
+    - id: agent-websearch
+      name: 'dsh-agent-websearch'

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Agent Web Search",
+    "description": "Web search through local search providers, starting with the agy (Google Antigravity) CLI. Each enabled provider registers with the web runtime and can serve the built-in web_search or the dedicated agent_web_search tool. agy needs an installed, logged-in CLI; one search takes about 15-30 seconds and runs in an isolated writable HOME seeded from your agy login. To route the built-in web_search through this bundle, select a listed provider (for example 'agy (local CLI)') in Settings > Plugins > Web Search & Fetch Settings under Search provider."
+  }
+}
