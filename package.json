@@ -1,51 +1,19 @@
 {
-  "name": "dsh-agent-websearch",
+  "name": "dshe",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "DeepSeek Harness web-search bundle with pluggable providers and a local agy (Google Antigravity) CLI provider",
-  "main": "./index.js",
+  "description": "DeepSeek Harness plugin monorepo: bundles and tools maintained by TnZzZHlp",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "node --test test/*.test.mjs",
-    "e2e": "node scripts/e2e-agy.mjs"
-  },
-  "exports": {
-    ".": "./index.js",
-    "./cordis.patch.yml": "./cordis.patch.yml",
-    "./locale/*.json": "./locale/*.json",
-    "./icon": "./icon.svg",
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "index.js",
-    "lib/*.js",
-    "providers/*.js",
-    "providers/README.md",
-    "cordis.patch.yml",
-    "locale/*.json",
-    "icon.svg",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": [
-    "dsh",
-    "dsh-bundle",
-    "web-search",
-    "agy",
-    "antigravity"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TnZzZHlp/dsh-agent-websearch.git"
-  },
-  "homepage": "https://github.com/TnZzZHlp/dsh-agent-websearch",
-  "license": "MIT",
-  "dsh": {
-    "bundle": {
-      "patch": "./cordis.patch.yml"
-    }
+    "test": "node --test packages/*/test/*.test.mjs",
+    "test:agent-websearch": "node --test packages/dsh-agent-websearch/test/*.test.mjs",
+    "e2e:agent-websearch": "node packages/dsh-agent-websearch/scripts/e2e-agy.mjs"
   },
   "engines": {
-    "dsh": "^0.2.2-rc.2"
-  }
+    "node": ">=22"
+  },
+  "license": "MIT"
 }
