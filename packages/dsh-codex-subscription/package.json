@@ -1,0 +1,26 @@
+{
+  "name": "dsh-codex-subscription",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Direct ChatGPT subscription authorization and Responses API integration for DeepSeek Harness",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": ["index.js", "lib/*.js", "cordis.patch.yml", "locale/*.json", "icon.svg", "README.md", "LICENSE"],
+  "scripts": { "test": "node --test test/*.test.mjs" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TnZzZHlp/dshe.git",
+    "directory": "packages/dsh-codex-subscription"
+  },
+  "homepage": "https://github.com/TnZzZHlp/dshe/tree/main/packages/dsh-codex-subscription",
+  "license": "MIT",
+  "engines": { "node": ">=22", "dsh": "^0.2.2-rc.2" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}

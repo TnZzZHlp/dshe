@@ -7,6 +7,7 @@
 | 包 | 说明 | 提供方/工具 |
 | --- | --- | --- |
 | [`dsh-agent-websearch`](packages/dsh-agent-websearch) | 可插拔的联网搜索 bundle，内置本机 `agy`（Google Antigravity）CLI 提供方 | 搜索提供方 `agy (local CLI)`；工具 `agent_web_search` |
+| [`dsh-codex-subscription`](packages/dsh-codex-subscription) | ChatGPT/Codex 订阅授权，直接调用官方 Responses API，支持多账号与输出前限额切换 | 模型提供方 `codex-subscription`；命令 `/codex`；只读工具 `codex_subscription_status` |
 
 ## 安装插件
 
@@ -37,6 +38,7 @@ dsh plugin --profile web remove dsh-agent-websearch
 ```
 packages/
   dsh-agent-websearch/       # 插件包：index.js、providers/、lib/、test/ 等
+  dsh-codex-subscription/    # 官方订阅授权、Responses 适配、多账号与状态查询
 README.md                    # 本文件：仓库说明与插件索引
 LICENSE
 package.json                 # 私有 workspace 根，只用于开发脚本
@@ -45,7 +47,7 @@ package.json                 # 私有 workspace 根，只用于开发脚本
 约定：
 
 - 每个插件目录是一个完整、可独立 `dsh plugin ... add <dir>` 的包，包名与目录名一致；
-- 插件之间不共享运行时代码；如果将来需要共享库，再引入单独的 workspace 包，而不是从 DSH 内部导入（`link:` 安装的 bundle 解析不到 `@deepseek-ai/*`）；
+- 插件之间不共享运行时代码；如果将来需要共享库，再引入单独的 workspace 包。`link:` bundle 如需 DSH 公开 Host API，应从运行时提供的 `DSH_INSTALL_DIR` 锚点解析，不能假定工作区能直接解析 `@deepseek-ai/*`，也不导入私有实现路径；
 - 插件保持零运行时依赖，直接使用 Node 内置模块和包内相对导入；
 - 每个插件至少带 `README.md`、`LICENSE` 兼容声明和 `node:test` 测试。
 

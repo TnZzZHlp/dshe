@@ -1,0 +1,1 @@
+{"meta":{"title":"Codex 订阅","description":"通过 OpenAI 官方 OAuth 授权，直接请求官方 Responses API。支持独立多账号和输出前的用量限制切换。使用 /codex login <账号ID> 登录，/codex status 查看状态和最近请求 token；官方 SIWC API 未公开订阅剩余额度百分比和重置时间。"}}

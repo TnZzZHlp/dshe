@@ -1,0 +1,4 @@
+- insert:
+    - id: codex-subscription
+      name: dsh-codex-subscription
+      config: {}

@@ -1,0 +1,1 @@
+{"meta":{"title":"Codex subscription","description":"Authorize ChatGPT plan usage with official OAuth and call the public Responses API directly. Separate accounts support failover on an explicit usage limit before output. Use /codex login <id> and /codex status. Remaining plan quota percentages and reset times are not exposed by the official SIWC API."}}
