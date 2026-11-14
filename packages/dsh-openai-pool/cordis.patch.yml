@@ -1,0 +1,4 @@
+- insert:
+    - id: openai-organization-usage
+      name: '@local/dsh-openai-pool'
+      config: {}
