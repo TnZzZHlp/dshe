@@ -1,0 +1,1 @@
+{"meta":{"title":"Passkey login","description":"Bind a passkey from an authenticated DSH browser session and use it to sign in at the configured HTTPS origin. Requires a carefully secured reverse proxy."}}

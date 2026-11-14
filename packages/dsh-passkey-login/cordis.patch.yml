@@ -1,0 +1,4 @@
+- insert:
+    - id: passkey-login
+      name: '@tnzzzhlp/dsh-passkey-login'
+      config: {}

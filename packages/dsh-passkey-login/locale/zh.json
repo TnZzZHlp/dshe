@@ -1,0 +1,1 @@
+{"meta":{"title":"Passkey 登录","description":"从已认证的 DSH 浏览器会话绑定 Passkey，随后在指定的 HTTPS 地址登录。必须正确配置安全反向代理。"}}

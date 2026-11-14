@@ -1,0 +1,16 @@
+{
+  "name": "@tnzzzhlp/dsh-passkey-login",
+  "version": "0.1.0",
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org" },
+  "type": "module",
+  "description": "Experimental single-owner DSH passkey login for the fixed dsh.tnzzz.top deployment",
+  "exports": { ".": "./index.js", "./client": "./client.js", "./cordis.patch.yml": "./cordis.patch.yml", "./package.json": "./package.json", "./locale/*.json": "./locale/*.json", "./icon": "./icon.svg" },
+  "files": ["index.js", "core.js", "root.js", "page.js", "client.js", "cordis.patch.yml", "README.md", "LICENSE", "locale/*.json", "icon.svg"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" }, "client": { "platform": "web", "immediately": true, "inject": ["@deepseek-ai/dsh-client-ui-plugin-manager"] } },
+  "dependencies": { "@simplewebauthn/server": "14.1.0" },
+  "scripts": { "test": "node --test test/*.test.js" },
+  "repository": { "type": "git", "url": "git+https://github.com/TnZzZHlp/dshe.git", "directory": "packages/dsh-passkey-login" },
+  "homepage": "https://github.com/TnZzZHlp/dshe/tree/main/packages/dsh-passkey-login",
+  "license": "MIT",
+  "engines": { "node": ">=22", "dsh": "^0.2.2-rc.2" }
+}
