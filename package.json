@@ -11,6 +11,7 @@
     "test": "node --test packages/*/test/*.test.mjs",
     "test:agent-websearch": "node --test packages/dsh-agent-websearch/test/*.test.mjs",
     "test:codex-subscription": "node --test packages/dsh-codex-subscription/test/*.test.mjs",
+    "test:programming-agent": "node --test packages/dsh-programming-agent/test/*.test.mjs",
     "e2e:agent-websearch": "node packages/dsh-agent-websearch/scripts/e2e-agy.mjs"
   },
   "engines": {
