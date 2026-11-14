@@ -1,5 +1,6 @@
-# Programming preset bundle: one agent preset (persona + curated tool set) plus
-# two corrections to the profile-wide prompt rows.
+# Programming preset bundle: one agent preset (persona, curated tool set, and a
+# rewrite of the file-reference paragraph) plus two corrections to the
+# profile-wide prompt rows.
 #
 # The preset persona cannot remove the global harness identity section, so the
 # identity line is disabled here on the profile-wide system-prompt row instead.
@@ -47,6 +48,12 @@
                 - Search the current directory only.
                 - Do not wait with a long sleep; use polling checks instead.
                 - Do not put volatile information into context: no dates or times, environment values, session or process identifiers, transient status, or values that change between runs. Use stable facts, or look them up when needed.
+          # The file-reference paragraph is registered into each agent's own
+          # scope by dsh-file-reference-local, so a preset row cannot shadow it
+          # by section name; this row rewrites it through the scoped prompt
+          # waterfall instead, which keeps the change inside this preset.
+          - id: file-reference-rewrite
+            name: '@tnzzzhlp/dsh-programming-agent'
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -69,11 +76,10 @@
             name: '@deepseek-ai/dsh-tool-jobs'
           - id: skill-filesystem
             name: '@deepseek-ai/dsh-skill-filesystem'
-            config:
-              customSkillDirs:
-                - !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@deepseek-ai/dsh-agent-preset/package.json')), 'skills')
+            disabled: true
           - id: tool-skill
             name: '@deepseek-ai/dsh-tool-skill'
+            disabled: true
           - id: planning
             name: cordis:group
             group: true

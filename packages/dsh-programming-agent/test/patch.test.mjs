@@ -39,6 +39,7 @@ test('the preset keeps its curated plugin order', () => {
   const plugins = entryIds(patch).filter((entry) => entry.indent === 10).map((entry) => entry.id)
   assert.deepEqual(plugins, [
     'persona',
+    'file-reference-rewrite',
     'agent-instructions',
     'tool-bash',
     'tool-pwsh',
