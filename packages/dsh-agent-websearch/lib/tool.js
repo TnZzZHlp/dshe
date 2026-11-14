@@ -2,6 +2,7 @@ import { abortError, isAbortError, isPluginError, messageOf, pluginError } from 
 import { isPlainObject } from './values.js'
 import { readProviderStatus } from './provider.js'
 import { combineSignals } from './signals.js'
+import { createSearchLogger } from './search-log.js'
 import {
   MAX_TOOL_SOURCES,
   SEARCH_RESULT_SCHEMA,
@@ -178,7 +179,7 @@ function describeProviders(entries) {
  * provider at execution time, because provider availability (a local CLI login,
  * for example) can change while the host is running.
  */
-export function createToolDefinition(config) {
+export function createToolDefinition(config, recordSearch = createSearchLogger({})) {
   const { entries, provider: defaultProvider } = config
   const providerList = providerIds(entries)
   const timeoutMs = toolTimeoutMs(config, entries)
@@ -253,23 +254,35 @@ export function createToolDefinition(config) {
       }
     },
     async execute(args, exec) {
-      if (exec?.signal?.aborted) throw abortError()
-      const parsed = parseToolArgs(args, config, entries, defaultProvider)
-      const entry = resolveProviderEntry(entries, parsed.provider)
-      const status = readProviderStatus(entry)
-      if (!status.available) {
-        throw pluginError(
-          `${TOOL_NAME} cannot use provider "${entry.definition.id}": ${status.reason ?? 'its local prerequisite is unavailable'}`,
-        )
+      const requested = isPlainObject(args) ? args.provider : undefined
+      const provider = requested === undefined ? defaultProvider :
+        typeof requested === 'string' && providerList.includes(requested.trim()) ? requested.trim() : 'unknown'
+      const details = {
+        entry: 'tool',
+        provider,
+        queries: isPlainObject(args) && Array.isArray(args.queries) ? args.queries.length : 0,
       }
-      if (exec?.signal?.aborted) throw abortError()
+      return recordSearch(details, exec?.signal, async () => {
+        if (exec?.signal?.aborted) throw abortError()
+        const parsed = parseToolArgs(args, config, entries, defaultProvider)
+        details.provider = parsed.provider
+        details.queries = parsed.queries.length
+        const entry = resolveProviderEntry(entries, parsed.provider)
+        const status = readProviderStatus(entry)
+        if (!status.available) {
+          throw pluginError(
+            `${TOOL_NAME} cannot use provider "${entry.definition.id}": ${status.reason ?? 'its local prerequisite is unavailable'}`,
+          )
+        }
+        if (exec?.signal?.aborted) throw abortError()
 
-      const request = {
-        queries: parsed.queries,
-        maxResults: parsed.maxResults ?? config.tool.maxResults,
-      }
-      const value = await runProviderSearch(entry, request, exec?.signal)
-      return normalizeSearchResult(value, { maxResults: request.maxResults })
+        const request = {
+          queries: parsed.queries,
+          maxResults: parsed.maxResults ?? config.tool.maxResults,
+        }
+        const value = await runProviderSearch(entry, request, exec?.signal)
+        return normalizeSearchResult(value, { maxResults: request.maxResults })
+      })
     },
   }
 }

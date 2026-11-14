@@ -8,6 +8,7 @@ import {
   AGY_PROVIDER_ID,
   AGY_SEARCH_TOOL,
   agyProvider,
+  buildArgs,
   buildPrompt,
   create,
   normalizeConfig,
@@ -109,6 +110,12 @@ test('buildPrompt forces exactly one search_web call and JSON-only output', () =
 
   assert.match(buildPrompt('q', { ...config, maxResults: 1 }), /exactly 2 entries/)
   assert.match(buildPrompt('q', { ...config, maxResults: 10 }), /exactly 5 entries/)
+})
+
+test('passes a selected model without a conflicting effort', () => {
+  const args = buildArgs('query', { ...AGY_DEFAULTS, model: 'gemini-3.8-flash-high' })
+  assert.equal(args[args.indexOf('--model') + 1], 'gemini-3.8-flash-high')
+  assert.equal(args.includes('--effort'), false)
 })
 
 test('normalizes provider payloads and deduplicates sources', () => {

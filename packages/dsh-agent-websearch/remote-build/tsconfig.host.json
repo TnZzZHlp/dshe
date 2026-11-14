@@ -1,0 +1,1 @@
+{"compilerOptions":{"target":"ES2022","module":"NodeNext","moduleResolution":"NodeNext","strict":true,"skipLibCheck":true,"paths":{"@deepseek-ai/dsh-typert-protocol":["./protocol.d.ts"]}},"files":[],"references":[{"path":"./packages/contract"}]}

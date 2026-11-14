@@ -1,4 +1,4 @@
-import { chmodSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -516,7 +516,7 @@ export function buildPrompt(query, config) {
   ].join('\n')
 }
 
-function buildArgs(query, config) {
+export function buildArgs(query, config) {
   const args = [
     '-p',
     buildPrompt(query, config),
@@ -526,10 +526,9 @@ function buildArgs(query, config) {
     AGY_OUTPUT_SCHEMA_JSON,
     '--settings',
     JSON.stringify({ permissions: { allow: [AGY_SEARCH_TOOL] } }),
-    '--effort',
-    config.effort,
   ]
   if (config.model !== undefined) args.push('--model', config.model)
+  else args.push('--effort', config.effort)
   if (config.logFile !== undefined) args.push('--log-file', config.logFile)
   args.push(...(config.extraArgs ?? []))
   return args
@@ -562,6 +561,8 @@ async function runAgySearch({ executable, home, query, config, signal, onSpawn }
 export function create(config) {
   const runtime = new AgyRuntime(config)
   const activeChildren = new Set()
+  const disposed = new AbortController()
+  let modelSource
 
   function status() {
     const executable = resolveAgyPath(config)
@@ -587,6 +588,75 @@ export function create(config) {
     return normalizeSearchResult(value, { maxResults: limit })
   }
 
+  async function listModels(signal) {
+    const current = status()
+    if (!current.available) throw pluginError(`agy provider is not available: ${current.reason}`)
+    const executable = resolveAgyPath(config)
+    if (executable === undefined) throw pluginError('agy provider is not available: the agy CLI disappeared from PATH')
+    const timeout = new AbortController()
+    const timer = setTimeout(() => timeout.abort(), 30_000)
+    timer.unref?.()
+    const combined = combineSignals(signal, timeout.signal, disposed.signal)
+    let slot
+    let home
+    let pool
+    try {
+      pool = runtime.ensurePool()
+      slot = await pool.acquire(combined.signal)
+      home = mkdtempSync(path.join(tmpdir(), 'dsh-agy-models-'))
+      const source = config.home !== undefined && hasLogin(config.home) ? config.home : findSourceHome(config)
+      if (source === undefined) throw pluginError('agy is not logged in on this machine')
+      seedRuntimeHome(source, home, { forceTarget: true })
+      const outcome = await runProcess(executable, ['models'], {
+        cwd: home,
+        env: {
+          ...process.env,
+          HOME: home,
+          USERPROFILE: home,
+          XDG_CONFIG_HOME: path.join(home, '.config'),
+          XDG_CACHE_HOME: path.join(home, '.cache'),
+          XDG_DATA_HOME: path.join(home, '.local', 'share'),
+        },
+        signal: combined.signal,
+        stdoutCap: 256_000,
+        stderrCap: 4_000,
+        onSpawn(child) {
+          activeChildren.add(child)
+          child.once('close', () => activeChildren.delete(child))
+        },
+      })
+      if (outcome.aborted) throw abortError()
+      if (outcome.code !== 0) throw pluginError(`agy models exited with code ${outcome.code}`)
+      if (outcome.stdout.length >= 256_000) throw pluginError('agy models output exceeded the size limit')
+      const models = []
+      const seen = new Set()
+      for (const line of outcome.stdout.split(/\r?\n/)) {
+        if (line.trim() === '') continue
+        const fields = line.split('\t')
+        if (fields.length !== 2 || !fields[0].trim() || !fields[1].trim()) {
+          throw pluginError('agy models returned an invalid model list')
+        }
+        const id = fields[0].trim()
+        const name = fields[1].trim()
+        if (seen.has(id)) throw pluginError('agy models returned duplicate model ids')
+        seen.add(id)
+        models.push({ id, name })
+      }
+      return { models }
+    } catch (error) {
+      if (timeout.signal.aborted && !signal?.aborted) throw pluginError('agy models timed out after 30s')
+      throw error
+    } finally {
+      clearTimeout(timer)
+      combined.dispose()
+      try {
+        if (home !== undefined) rmSync(home, { recursive: true, force: true })
+      } finally {
+        if (slot !== undefined) pool.release(slot)
+      }
+    }
+  }
+
   async function searchOne(request, signal) {
     const query = trimmedString(request?.query)
     if (query === undefined) throw pluginError('agy provider received an empty query')
@@ -599,6 +669,8 @@ export function create(config) {
       throw pluginError('agy provider is not available: the agy CLI disappeared from PATH')
     }
 
+    const model = modelSource === undefined ? config.model : trimmedString(modelSource.get())
+    const searchConfig = { ...config, model }
     const pool = runtime.ensurePool()
     const slot = await pool.acquire(signal)
     try {
@@ -608,7 +680,7 @@ export function create(config) {
         executable,
         home,
         query,
-        config,
+        config: searchConfig,
         signal,
         onSpawn(child) {
           activeChildren.add(child)
@@ -660,13 +732,18 @@ export function create(config) {
 
   return {
     status,
+    setModelSource(source) {
+      modelSource = source
+    },
     async ready() {
       return status().available
     },
     search: searchOne,
     searchMany,
+    listModels,
     toolTimeoutMs,
     dispose() {
+      disposed.abort()
       for (const child of activeChildren) {
         try {
           child.kill('SIGTERM')

@@ -1,16 +1,23 @@
 {
-  "name": "dsh-agent-websearch",
+  "name": "@tnzzzhlp/dsh-agent-websearch",
   "version": "0.1.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "type": "module",
   "description": "DeepSeek Harness web-search bundle with pluggable providers and a local agy (Google Antigravity) CLI provider",
   "main": "./index.js",
   "scripts": {
+    "build:remote": "node remote-build/generate.js && tsc -p remote-build/packages/contract/tsconfig.json",
+    "build:client": "esbuild client-source.js --bundle --platform=browser --format=iife --outfile=client.js",
     "test": "node --test test/*.test.mjs",
     "e2e": "node scripts/e2e-agy.mjs"
   },
   "exports": {
     ".": "./index.js",
+    "./client": "./client.js",
+    "./remote": "./remote-build/packages/contract/lib/typert.remote-client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./locale/*.json": "./locale/*.json",
     "./icon": "./icon.svg",
@@ -18,6 +25,10 @@
   },
   "files": [
     "index.js",
+    "client.js",
+    "remote-build/packages/contract/lib/*.js",
+    "remote-build/packages/contract/lib/*.d.ts",
+    "remote-build/packages/contract/package.json",
     "lib/*.js",
     "providers/*.js",
     "providers/README.md",
@@ -44,7 +55,31 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-plugin-manager",
+        "@deepseek-ai/dsh-api-remotes"
+      ]
     }
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.19.0",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.2",
+    "zod": "4.6.6"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/dsh-api-gateway": "0.2.2-rc.2",
+    "@deepseek-ai/dsh-client-connection": "0.2.2-rc.2",
+    "@deepseek-ai/dsh-typert-generator": "0.2.2-rc.2",
+    "@deepseek-ai/dsh-typert-registry": "0.2.2-rc.2",
+    "esbuild": "^0.25.0",
+    "typescript": "^6.0.3"
   },
   "engines": {
     "dsh": "^0.2.2-rc.2"

@@ -106,7 +106,7 @@ agy 提供方的提示值为 `max(60s, timeoutMs × ceil(maxQueries / 并发槽�
 
 ```yaml
 - id: agent-websearch
-  name: 'dsh-agent-websearch'
+  name: '@tnzzzhlp/dsh-agent-websearch'
   config:
     provider: agy                 # 默认提供方 id；缺省为第一个启用的提供方
     tool:

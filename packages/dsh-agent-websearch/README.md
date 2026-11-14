@@ -1,4 +1,4 @@
-# dsh-agent-websearch
+# @tnzzzhlp/dsh-agent-websearch
 
 > 本包是 [dshe](../../) 单体仓库的一部分；版本、安装和仓库约定以包内文档为准。
 
@@ -17,24 +17,19 @@
 - **统一契约**：`status()` / `ready()` / `search()` / `searchMany?()` / `toolTimeoutMs?()` / `dispose?()`，详见 [`providers/README.md`](providers/README.md)。
 - **专用工具 `agent_web_search`**：`queries[]`（1-10 条，去重后并行）、可选 `provider`、可选 `maxResults`（1-10）；返回综合答案与来源列表；声明并发安全。
 - **agy 提供方**：解析本机 `agy` 可执行文件，检测登录状态，把 agy 登录文件播种进可写的隔离 HOME，按槽位隔离多开，子进程支持超时与取消，插件卸载时终止仍在运行的 agy。
-- **零依赖**：全部使用 Node 内置模块和相对导入，不需要安装依赖，也不导入 `@deepseek-ai/*`（通过 `link:` 本地安装的 bundle 无法解析 DSH 内部包）。
+- **模型设置**：在插件详情页配置 agy 模型；留空并保存可恢复继承的配置。
 
 ## 安装
 
 要求：DSH `0.2.2-rc.2` 或兼容版本；使用 agy 提供方时还需本机已安装并已登录 `agy`。
 
+发布到 npm 后，可安装进目标 profile（这里以 web 为例）：
+
 ```sh
-# 1) 取得代码
-git clone https://github.com/TnZzZHlp/dshe.git
-cd dshe/packages/dsh-agent-websearch
-
-# 2) 安装进目标 profile（这里以 web 为例）
-dsh plugin --profile web add .
-
-# 3) 重启该 profile（host 进程重新加载 bundle）
+dsh plugin --profile web add @tnzzzhlp/dsh-agent-websearch
 ```
 
-也可以直接在 DSH 的插件管理界面安装本地目录。安装成功后，`$DSH_HOME/profiles/web/package.json` 会出现依赖 `"dsh-agent-websearch": "link:/…/dshe/packages/dsh-agent-websearch"`，`dsh.profile.bundles` 会追加 `dsh-agent-websearch`；`dsh --profile web --dump-config` 可以看到 `# == dsh-agent-websearch` 层。
+也可以在 DSH 的插件管理界面输入 `@tnzzzhlp/dsh-agent-websearch` 安装。源码开发时，先安装仓库依赖，在包目录执行 `pnpm run build:remote` 和 `pnpm run build:client`，再用 `dsh plugin --profile web add .` 安装本地目录。安装后按 DSH 提示重载或重启目标 profile。
 
 **从旧单提供方插件升级**：如果已安装 `dsh-agy-websearch`，请先移除它再装本组合包，否则两个 bundle 会注册同一个提供方 id `agy`，Web 运行时将报 `WEB_DUPLICATE_PROVIDER` 并导致加载失败：
 
@@ -45,7 +40,7 @@ dsh plugin --profile web remove dsh-agy-websearch
 卸载：
 
 ```sh
-dsh plugin --profile web remove dsh-agent-websearch
+dsh plugin --profile web remove @tnzzzhlp/dsh-agent-websearch
 ```
 
 ## 使用
@@ -77,7 +72,7 @@ dsh plugin --profile web remove dsh-agent-websearch
 
 ```yaml
 - id: agent-websearch
-  name: 'dsh-agent-websearch'
+  name: '@tnzzzhlp/dsh-agent-websearch'
   config:
     provider: agy            # 默认提供方 id
     tool:
@@ -116,7 +111,7 @@ agy 的登录 token 会被复制到运行 HOME（`0600`），不会上传到任�
 
 ## 开发
 
-零依赖，Node ≥ 22（使用 `node:test`、`AbortSignal`）：
+Node ≥ 22（使用 `node:test`、`AbortSignal`）：
 
 ```sh
 npm test                     # node:test 单元测试，不联网、不启动 agy

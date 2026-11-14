@@ -1,0 +1,1 @@
+{"extends":"../../tsconfig.host.json","compilerOptions":{"composite":true,"rootDir":"src","outDir":"lib"},"include":["src/**/*.ts"],"references":[]}

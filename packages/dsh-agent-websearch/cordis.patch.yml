@@ -4,4 +4,4 @@
 # configuration, so each provider stays opt-in for the built-in web_search.
 - insert:
     - id: agent-websearch
-      name: 'dsh-agent-websearch'
+      name: '@tnzzzhlp/dsh-agent-websearch'
