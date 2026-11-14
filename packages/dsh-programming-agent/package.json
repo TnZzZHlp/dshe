@@ -1,0 +1,23 @@
+{
+  "name": "@tnzzzhlp/dsh-programming-agent",
+  "version": "0.1.0",
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org" },
+  "type": "module",
+  "description": "Programming agent preset bundle for DeepSeek Harness with a project-rules persona and a curated tool set",
+  "exports": {
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": ["cordis.patch.yml", "README.md", "LICENSE"],
+  "scripts": { "test": "node --test test/*.test.mjs" },
+  "keywords": ["dsh", "dsh-bundle", "agent-preset", "prompt"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TnZzZHlp/dshe.git",
+    "directory": "packages/dsh-programming-agent"
+  },
+  "homepage": "https://github.com/TnZzZHlp/dshe/tree/main/packages/dsh-programming-agent",
+  "license": "MIT",
+  "engines": { "node": ">=22", "dsh": "^0.2.2-rc.2" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}

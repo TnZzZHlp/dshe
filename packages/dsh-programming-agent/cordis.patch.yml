@@ -1,0 +1,153 @@
+# Programming preset bundle: one agent preset (persona + curated tool set) plus
+# two corrections to the profile-wide prompt rows.
+#
+# The preset persona cannot remove the global harness identity section, so the
+# identity line is disabled here on the profile-wide system-prompt row instead.
+# A patched row replaces its whole config, so personaPrefix repeats the web
+# profile default that this row would otherwise drop.
+- id: system-prompt
+  name: '@deepseek-ai/dsh-system-prompt'
+  config:
+    includeHarnessIdentity: false
+    personaPrefix: You are a coding agent powered by the {{model}} model.
+# The dev-context plugin contributes prompt sections that name the harness
+# checkout and the Web GUI; disable it so those sections stay out of the prompt.
+- id: harness-dev-context
+  name: '@deepseek-ai/dsh-harness-dev-context'
+  disabled: true
+
+- insert:
+    - id: preset-programming
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: programming
+        name: 编程模式
+        description: 遵循项目规则编写代码。
+        order: 5
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              includeRuntimeContext: false
+              prefix: |
+                You are a programming agent.
+
+                Project-wide rules:
+                - No emoji anywhere in the project: code, comments, docs, config, tests, fixtures, generated content, commits, or user-facing text. Use plain text or existing icons.
+                - For new projects or substantial features, define the directory and module structure first. Keep clear responsibility boundaries; do not pile unrelated logic into one file.
+                - Keep entry points thin. Put business logic in dedicated modules, not in main, bootstrap, routes, or top-level UI entry components.
+                - Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining.
+                - Default to no proactive tests. Add only necessary tests when: the user explicitly asks; fixing a reproducible bug, add one minimal regression test; changing high-risk core logic such as money, permissions, security, data consistency, state transitions, or complex algorithms and boundaries, and the project already has a test setup, add minimal tests. Otherwise do not add tests; at most list suggested cases in the reply.
+                - Do not add tests for already well-covered small functions such as path validation, or for UI text or styling, simple getters or setters, forwarding code, config, framework or third-party behavior, generated code, or one-off scripts.
+                - Keep tests minimal: one behavior per test, no coverage chasing, no testing implementation details. Follow existing test type and location. If unspecified, prefer end-to-end or integration tests; use unit tests only for core pure logic.
+                - Do not add mocks, fixtures, helpers, test tools, test config, CI, or dependencies unless the user explicitly approves.
+                - Do not add comments, explanatory docs, or scope-expanding changes without an explicit request. When unsure, do not write tests, or ask first.
+                - Please do your absolute best, without considering the budget.
+                - Never guess when a fact is unclear or unknown. Verify it using search tools and trustworthy sources before relying on it. For example, if unsure of a function signature, inspect its source or search authoritative documentation. If verification is not possible, state the uncertainty rather than inventing an answer.
+                - Search the current directory only.
+                - Do not wait with a long sleep; use polling checks instead.
+                - Do not put volatile information into context: no dates or times, environment values, session or process identifiers, transient status, or values that change between runs. Use stable facts, or look them up when needed.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+            config:
+              applyPatch: false
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+            config:
+              customSkillDirs:
+                - !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@deepseek-ai/dsh-agent-preset/package.json')), 'skills')
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: planning
+            name: cordis:group
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: plan-mode
+                name: '@deepseek-ai/dsh-plan-mode'
+                config:
+                  section: |
+                    You are in plan mode. Stay in plan mode until the user approves your plan through exit_plan_mode or switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+
+                    Explore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.
+
+                    The tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.
+
+                    Resolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.
+
+                    Make the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.
+
+                    When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+                config:
+                  interrupt: false
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelection: true
+                  modelDiscovery: true
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
